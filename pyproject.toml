@@ -8,7 +8,7 @@ authors = [{name = "Lamin Labs", email = "open-source@lamin.ai"}]
 readme = "README.md"
 dynamic = ["version", "description"]
 dependencies = [
-    "lamindb-core>=2.3a1,<3",
+    "lamindb-core>=2.11a2",
     "bionty>=2.3a1,<3",
 ]
 
