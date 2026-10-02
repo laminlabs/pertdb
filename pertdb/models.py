@@ -22,7 +22,6 @@ from bionty.models import (
 )
 from django.db import models
 from django.db.models import CASCADE, PROTECT, QuerySet
-from lamin_utils import logger
 from lamindb.base.fields import (
     CharField,
     DurationField,
@@ -38,6 +37,7 @@ from lamindb.models import (
     TracksRun,
     TracksUpdates,
 )
+from lamindb_setup import logger
 
 from .types import BiologicType, GeneticPerturbationSystem  # noqa
 
