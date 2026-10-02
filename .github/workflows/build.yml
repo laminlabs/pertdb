@@ -9,6 +9,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      deployments: write
+      issues: write
+      pull-requests: write
     env:
       GITHUB_EVENT_NAME: ${{ github.event_name }}
     strategy:
@@ -44,13 +49,22 @@ jobs:
       - run: nox -s install
       - run: nox -s test
       - run: nox -s docs
-      - uses: nwtgck/actions-netlify@v1.2
+      - run: rm -r ./_build/html/.doctrees # do not want to deploy with cloudflare
+        if: matrix.python-version == '3.12'
+      - uses: cloudflare/wrangler-action@v3
+        id: cloudflare
         if: matrix.python-version == '3.12'
         with:
-          publish-dir: "_build/html"
-          production-deploy: ${{ github.event_name == 'push' }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          enable-commit-comment: false
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 472bdad691b4483dea759eadb37110bd
+          command: pages deploy "_build/html" --project-name=pertdb
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+      - uses: edumserrano/find-create-or-update-comment@v2
+        if: ${{ matrix.python-version == '3.12' && github.event_name == 'pull_request' }}
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: "Deployment URL"
+          comment-author: "github-actions[bot]"
+          body: |
+            Deployment URL: ${{ steps.cloudflare.outputs.deployment-url }}
+          edit-mode: replace
